@@ -6,6 +6,7 @@ Este é um exemplo de uma aplicação iOS para um cardápio digital, que permite
 
 - Visualizar alimentos disponíveis no cardápio.
 - Adicionar novos alimentos ao cardápio.
+- Atualização da lista de produtos ao fazer scroll para cima no topo da tela.
 
 ## Repositórios complementares
 

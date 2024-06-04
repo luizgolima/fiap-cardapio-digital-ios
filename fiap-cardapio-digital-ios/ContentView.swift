@@ -19,6 +19,9 @@ struct ContentView: View {
                 List(foods, id: \.id) { food in
                     FoodRowView(food: food)
                 }
+                .refreshable {
+                    fetchFoods()
+                }
 
                 Spacer()
 
@@ -42,12 +45,16 @@ struct ContentView: View {
             .navigationBarTitle("Cardápio Digital")
         }
         .onAppear {
-            apiClient.fetchFoods { fetchedFoods, error in
-                if let fetchedFoods = fetchedFoods {
-                    self.foods = fetchedFoods
-                } else if let error = error {
-                    print("Error fetching foods: \(error)")
-                }
+            fetchFoods()
+        }
+    }
+
+    private func fetchFoods() {
+        apiClient.fetchFoods { fetchedFoods, error in
+            if let fetchedFoods = fetchedFoods {
+                self.foods = fetchedFoods
+            } else if let error = error {
+                print("Error fetching foods: \(error)")
             }
         }
     }

@@ -9,6 +9,89 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var foods: [FoodResponse] = []
+    @State private var isShowingNewFoodForm = false
+
+    let apiClient = APIClient()
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                List(foods, id: \.id) { food in
+                    FoodRowView(food: food)
+                }
+
+                Spacer()
+
+                Button(action: {
+                    isShowingNewFoodForm.toggle()
+                }) {
+                    Text("Adicionar Novo Produto")
+                        .frame(minWidth: 0, maxWidth: .infinity)
+                        .padding()
+                        .foregroundColor(.white)
+                        .background(Color.blue)
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                }
+                .sheet(isPresented: $isShowingNewFoodForm) {
+                    NavigationView {
+                        NewFoodView(foods: $foods, isPresented: $isShowingNewFoodForm)
+                    }
+                }
+            }
+            .navigationBarTitle("Cardápio Digital")
+        }
+        .onAppear {
+            apiClient.fetchFoods { fetchedFoods, error in
+                if let fetchedFoods = fetchedFoods {
+                    self.foods = fetchedFoods
+                } else if let error = error {
+                    print("Error fetching foods: \(error)")
+                }
+            }
+        }
+    }
+}
+
+struct FoodRowView: View {
+    let food: FoodResponse
+
+    var body: some View {
+        HStack {
+            AsyncImage(url: URL(string: food.image)) { phase in
+                switch phase {
+                case .empty:
+                    ProgressView()
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 50, height: 50)
+                case .failure:
+                    Image(systemName: "photo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 50, height: 50)
+                @unknown default:
+                    EmptyView()
+                }
+            }
+
+            VStack(alignment: .leading) {
+                Text(food.title)
+                    .font(.headline)
+                Text("Preço: R$ \(food.price)")
+                    .font(.subheadline)
+            }
+        }
+        .padding(.vertical)
+        .padding(.horizontal, 20)
+    }
+}
+
+struct NewFoodView: View {
+    @Binding var foods: [FoodResponse]
+    @Binding var isPresented: Bool
     @State private var newFoodTitle = ""
     @State private var newFoodImage = ""
     @State private var newFoodPrice = ""
@@ -17,92 +100,62 @@ struct ContentView: View {
 
     var body: some View {
         VStack {
-            TextField("Title", text: $newFoodTitle)
+            TextField("Título", text: $newFoodTitle)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+                .padding(.horizontal)
+                .padding(.vertical, 10)
 
-            TextField("Image URL", text: $newFoodImage)
+            TextField("URL da Imagem", text: $newFoodImage)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+                .padding(.horizontal)
+                .padding(.vertical, 10)
 
-            TextField("Price", text: $newFoodPrice)
+            TextField("Preço", text: $newFoodPrice)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+                .padding(.horizontal)
+                .padding(.bottom, 20)
 
-            Button("Save") {
-                let newFood = FoodRequest(
-                    title: newFoodTitle,
-                    image: newFoodImage,
-                    price: Int(newFoodPrice) ?? 0
-                )
-                apiClient.saveFood(food: newFood) { result in
-                    switch result {
-                    case .success(let savedFood):
-                        foods.append(savedFood)
-                        newFoodTitle = ""
-                        newFoodImage = ""
-                        newFoodPrice = ""
-                    case .failure(let error):
-                        print("Error saving food: \(error)")
-                    }
+            Button(action: saveNewFood) {
+                Text("Salvar")
+                    .frame(minWidth: 0, maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(Color.blue)
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+            }
+        }
+        .padding()
+    }
 
-                    apiClient.fetchFoods { fetchedFoods, error in
-                        if let fetchedFoods = fetchedFoods {
+    private func saveNewFood() {
+        let newFood = FoodRequest(
+            title: newFoodTitle,
+            image: newFoodImage,
+            price: Int(newFoodPrice) ?? 0
+        )
+        apiClient.saveFood(food: newFood) { result in
+            switch result {
+            case .success(let savedFood):
+                DispatchQueue.main.async {
+                    foods.append(savedFood)
+                    newFoodTitle = ""
+                    newFoodImage = ""
+                    newFoodPrice = ""
+                    isPresented = false
+                }
+
+                apiClient.fetchFoods { fetchedFoods, error in
+                    if let fetchedFoods = fetchedFoods {
+                        DispatchQueue.main.async {
                             self.foods = fetchedFoods
-                        } else if let error = error {
-                            print("Error fetching foods: \(error)")
                         }
-                    }
-                }
-            }
-            .padding()
-
-            List(foods, id: \.id) { food in
-                HStack {
-                    AsyncImage(url: URL(string: food.image)) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 50, height: 50)
-                        case .failure:
-                            Image(systemName: "photo")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 50, height: 50)
-                        @unknown default:
-                            EmptyView()
-                        }
-                    }
-
-                    VStack(alignment: .leading) {
-                        Text(food.title)
-                            .font(.headline)
-                        Text("Price: \(food.price)")
-                            .font(.subheadline)
-                    }
-                }
-            }
-            .onAppear {
-                apiClient.fetchFoods { fetchedFoods, error in
-                    if let fetchedFoods = fetchedFoods {
-                        self.foods = fetchedFoods
                     } else if let error = error {
                         print("Error fetching foods: \(error)")
                     }
                 }
-            }
-            .onAppear {
-                apiClient.fetchFoods { fetchedFoods, error in
-                    if let fetchedFoods = fetchedFoods {
-                        self.foods = fetchedFoods
-                    } else if let error = error {
-                        print("Error fetching foods: \(error)")
-                    }
-                }
+            case .failure(let error):
+                print("Error saving food: \(error)")
             }
         }
     }

@@ -126,6 +126,10 @@ struct NewFoodView: View {
             }
         }
         .padding()
+        .navigationBarTitle("Novo Produto", displayMode: .inline)
+        .navigationBarItems(leading: Button("Voltar") {
+            isPresented = false
+        })
     }
 
     private func saveNewFood() {
@@ -142,16 +146,13 @@ struct NewFoodView: View {
                     newFoodTitle = ""
                     newFoodImage = ""
                     newFoodPrice = ""
-                    isPresented = false
-                }
-
-                apiClient.fetchFoods { fetchedFoods, error in
-                    if let fetchedFoods = fetchedFoods {
-                        DispatchQueue.main.async {
+                    isPresented = false // Fechar o toggle
+                    apiClient.fetchFoods { fetchedFoods, error in
+                        if let fetchedFoods = fetchedFoods {
                             self.foods = fetchedFoods
+                        } else if let error = error {
+                            print("Error fetching foods: \(error)")
                         }
-                    } else if let error = error {
-                        print("Error fetching foods: \(error)")
                     }
                 }
             case .failure(let error):
@@ -238,6 +239,11 @@ class APIClient {
             }
 
             do {
+                guard !data.isEmpty else {
+                    completion(.failure(URLError(.zeroByteResource)))
+                    return
+                }
+
                 let savedFood = try JSONDecoder().decode(FoodResponse.self, from: data)
                 completion(.success(savedFood))
             } catch {

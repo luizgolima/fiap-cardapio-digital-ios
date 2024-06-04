@@ -25,6 +25,7 @@ Este é um exemplo de uma aplicação iOS para um cardápio digital, que permite
    git clone https://github.com/luizgolima/fiap-cardapio-digital-ios.git
    ```
 2. Abra o projeto no Xcode.
-3. Certifique-se de que o servidor Spring backend esteja em execução (local ou em deploy).
-4. Execute o aplicativo no simulador iOS ou em um dispositivo físico.
+3. Execute o aplicativo no simulador iOS ou em um dispositivo físico.
+
+Obs.: Certifique-se de que o servidor Spring backend esteja em execução (local ou em deploy). Se estiver rodando o backend localmente, lembre-se de atualizar a URL da chamada da API do cliente para `http://localhost:8080/food`.
 

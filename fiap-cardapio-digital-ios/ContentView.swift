@@ -196,7 +196,7 @@ class APIClient {
     }
 
     func fetchFoods(completion: @escaping ([FoodResponse]?, Error?) -> Void) {
-        guard let url = URL(string: "http://localhost:8080/food") else {
+        guard let url = URL(string: "https://fiap-cardapio-digital-server.onrender.com/food") else {
             completion(nil, URLError(.badURL))
             return
         }
@@ -217,7 +217,7 @@ class APIClient {
     }
 
     func saveFood(food: FoodRequest, completion: @escaping (Result<FoodResponse, Error>) -> Void) {
-        guard let url = URL(string: "http://localhost:8080/food") else {
+        guard let url = URL(string: "https://fiap-cardapio-digital-server.onrender.com/food") else {
             completion(.failure(URLError(.badURL)))
             return
         }

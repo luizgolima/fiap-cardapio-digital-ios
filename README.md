@@ -13,6 +13,10 @@ Este é um exemplo de uma aplicação iOS para um cardápio digital, que permite
 - [Repositório do backend Spring](https://github.com/luizgolima/fiap-cardapio-digital-server)
 - [Repositório do cliente web](https://github.com/luizgolima/fiap-cardapio-digital-client)
 
+## Aplicações no ar (deploy)
+- [Frontend](https://fiap-cardapio-digital-client.onrender.com)
+- [Backend](https://fiap-cardapio-digital-server.onrender.com/food)
+
 ## Requisitos
 
 - Xcode 15
